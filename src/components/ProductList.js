@@ -1,4 +1,3 @@
-// ProductList.js
 import React, { useState, useEffect } from 'react';
 import Product from './Product';
 
@@ -6,8 +5,7 @@ const ProductList = ({ onAddToCart }) => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    // Fetch product data from backend API
-    fetch('/products')
+    fetch('../Backend/app')
       .then(response => response.json())
       .then(data => setProducts(data))
       .catch(error => console.error('Error fetching products:', error));

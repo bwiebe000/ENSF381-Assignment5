@@ -3,28 +3,35 @@ import Header from './Header';
 import ProductList from './ProductList';
 import Cart from './Cart';
 import Footer from './Footer';
-import productsData from '../data/products';
-import { Link } from 'react-router-dom';
+
 
 const Productpage = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [products, setProducts] = useState([]);
 
   // Load cart items from localStorage on component mount
   useEffect(() => {
     const storedCartItems = localStorage.getItem('cartItems');
     if (storedCartItems) {
-      console.log("Loaded cart items from localStorage:", storedCartItems);
-      console.log("Loaded cart items in JSON", JSON.parse (storedCartItems));
       setCartItems(JSON.parse(storedCartItems));
-  
     }
-  }, []); 
+  }, []);
 
-  
   useEffect(() => {
-    console.log("Productpage component rerendered");
+    fetch('/auth/products')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => setProducts(data))
+      .catch(error => console.error('Error fetching products:', error));
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
-  }, [cartItems]); 
+  }, [cartItems]);
 
   const addToCart = (product) => {
     const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
@@ -45,15 +52,14 @@ const Productpage = () => {
     const updatedCartItems = cartItems.map(item => {
       if (item.id === productId) {
         if (item.quantity === 1) {
-          return null; 
+          return null;
         } else {
-          return { ...item, quantity: item.quantity - 1 }; 
+          return { ...item, quantity: item.quantity - 1 };
         }
       }
       return item;
-    }).filter(item => item !== null); // Filter out null entries to remove removed items from cart
+    }).filter(item => item !== null);
 
-    console.log("Updated Cart Items:", updatedCartItems);
     setCartItems(updatedCartItems);
   };
 
@@ -63,7 +69,7 @@ const Productpage = () => {
       <table>
         <tbody>
           <tr>
-            <td><ProductList products={productsData} onAddToCart={addToCart} /></td>
+            <td><ProductList products={products} onAddToCart={addToCart} /></td>
             <td style={{ verticalAlign: 'top' }}><Cart cartItems={cartItems} onRemove={removeFromCart} /></td>
           </tr>
         </tbody>
